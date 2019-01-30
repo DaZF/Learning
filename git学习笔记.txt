@@ -1,0 +1,293 @@
+#github在统计提交的时候，会判断邮箱是否跟github的登陆邮箱匹配，不匹配则不计算活跃度，即不生成小绿块。
+#显示配置信息
+$git config user.name
+$git config user.email
+#配置当前仓库信息
+$git config user.name <user.name>
+$git config user.email <user.email>
+#配置全局仓库信息
+$git config --global user.name <user.name>
+$git config --global user.email <user.email>
+
+#创建git仓库 repo
+$mkdir learngit && cd learngit
+$git init
+
+#添加文件到仓库
+$git add <file>
+$git add <file> <file> <file>...
+
+#提交更改
+$git commit -m "update message"
+#git commit命令执行成功后会告诉你
+#1 file changed：1个文件被改动；2 insertions：插入了两行内容
+
+#查看工作区状态
+#如果git status告诉你有文件被修改过，用git diff可以查看修改内容。
+$git status
+
+#查看文件修改内容
+#git diff 比较的是工作区文件和上次git add后的内容（上次改动后的暂存区stage）
+$git diff <file>
+#git diff --cached 比较的是暂存区的文件与仓库分支里（上次git commit 后的内容）的区别
+$git diff --cached <file>
+#git diff HEAD -- <file> 比较的是工作区的文件与仓库分支里（上次git commit 后的内容）的区别
+$git diff HEAD -- <file>
+#查看当前分支与另一branch_name分支的区别
+$git diff <branch_name>
+
+
+#查看历史记录
+#git log 显示最近到最远的历史记录
+$git log
+#一行内显示一条记录
+$git log --pretty=oneline
+#显示所有记录
+$git reflog
+#图形化显示 --graph
+#commit_id简洁显示 --abbrev-commit
+$git log --graph --pretty=oneline --abbrev-commit
+
+#切换版本
+#切换到上一个版本
+$git reset --hard HEAD^
+#切换到上上一个版本
+$git reset --hard HEAD^^
+#切换到上一百个版本
+$git reset --hard HEAD~100
+#切换到某一个commit id的版本,commit_id只需要前几位保证git能找到唯一的一个就行
+$git reset --hard <commit_id>
+
+#撤销修改
+#命令git checkout -- <file>意思就是，把<file>文件在工作区的修改全部撤销，这里有两种情况：
+#一种是<file>自修改后还没有被放到暂存区，现在，撤销修改就回到和版本库一模一样的状态；
+#一种是<file>已经添加到暂存区后，又作了修改，现在，撤销修改就回到添加到暂存区后的状态。
+#git checkout -- file命令中的--很重要 没有--就变成切换分支了
+$git checkout -- <file>
+#如果已经将修改git add到stage了，用git reset HEAD <file>来将暂存区的修改撤回到工作区，再用git checkout -- <file>撤销工作区修改
+$git reset HEAD <file>
+$git checkout -- <file>
+#如果修改已经git commit了，直接回退git reset，前提是没有push到远程分支。
+
+#删除文件
+#删除工作区文件
+$rm <file>
+#确认删除，修改暂存区
+$git rm <file>
+#commit把删除修改后的stage提交到新版本
+$git commit -m "delete <file>"
+#如果在工作区rm了文件后，是删错了，就可以git checkout -- <file>从版本里还原回来
+
+#本地添加远程仓库
+#repo_name远程仓库的别名，一般用origin，repo_link就是远程仓库的ssh链接
+$git remote add <repo_name> <repo_link>
+#删除本地远程仓库
+$git remote remove <repo_name>
+#查看远程仓库
+$git remote
+#更详细的查看远程仓库,(fetch)拥有抓取权限，(push)拥有推送权限
+$git remote -v
+#更加详细的显示某个远程仓库的信息
+$git remote shwo <repo_name>
+#更改本地远程仓库名
+$git remote rename <current_repo_name> <renamed_repo_name>
+
+#推送版本
+#绑定本地仓库当前分支和远程仓库指定分支-u,第一次推送时需要
+$git push -u origin master
+#以后推送时可以简洁些
+$git push origin master
+
+#分支管理
+#创建分支
+$git branch <branch_name>
+#创建后用git checkout <branch_name>切换
+#创建并切换分支
+$git checkout -b <branch_name>
+
+#查看分支
+#git branch命令会列出本地所有分支，当前分支前面会标一个 *号
+$git branch
+#查看远程分支
+$git branch -r
+#-a可以查看所有分支，包括远程分支
+$git branch -a
+#查看所有分支及其追踪分支
+$git branch -vv
+
+#删除分支
+$git branch -d <branch_name>
+#强行删除没有合并的分支
+$git branch -D <branch_name>
+
+#合并分支
+#把dev分支的内容合并到master分支上，快进模式fast-forward，直接将master分支的指针指向dev分支
+$git checkout master
+$git merge dev
+#在合并分支时，如果两个分支在原来的基础上都做了不同的修改，合并时会报错，git merge会提示不同的文件，git status也会提示
+#修改完冲突的文件
+$git add <file>
+$git commit -m "confict fixed"
+#这样就解决了冲突文件并合并完分支
+#在合并时可以带--no-ff参数，不使用fast forward合并，在合并后会有个新的commit来指向合并后的版本
+$git commit --no-ff -m "merge with no-ff" dev
+
+#处理bug步骤
+#场景：发现master分支有bug，当前正在处理dev分支并且无法立即完成
+#首先储存现场
+#用git add 将新的文件添加到git仓库内，避免untracked files
+#用git stash储存现场，储存完后工作区会恢复到上一次git add或者git commit的状态，暂存区会变空
+$git stash
+#查看储存的现场
+$git stash list
+#确认当前暂存区是空的
+$git status
+#切换到master分支，因为bug出在master分支，新建issue分支来处理bug
+$git checkout master
+$git checkout -b issue
+#修改完bug，add->commit
+$git checkout master
+$git merge issue
+$git branch -d issue
+#处理完了bug并把修复后的版本合并的到了要修复的master分支上
+#切换回dev分支继续工作
+$git checkout dev
+$git stash list #查看当前储存现场的列表
+$git stash apply stash@{0} #恢复现场stash@{0},使用apply恢复需要以后手动drop
+$git stash drop stash@{0} 
+$git stash pop #通过pop来完成apply最近的现场并drop掉
+
+#克隆远程仓库
+$git clone <repo_link>
+#当使用ssh协议时，还可以这样，使用用户名访问
+$git clone [user@]<repo_link>
+#克隆以后，本地master分支指向origin/master，默认的。
+#origin就是远程仓库的别名，用git remote能查看
+$git clone -o <new_origin> <repo_link>
+#上述命令执行完则git remote显示的是new_origin，不是origin
+#克隆时可以更改克隆后本地仓库的名字，默认是远程仓库的名字
+$git clone <repo_link> <repo_name>
+
+#拉取远程仓库
+#拉群所有git branch -r仓库的所有更新的分支
+$git fetch
+#可以运行 git fetch <repo_name>来抓取远程仓库 repo_name 有而本地没有的数据
+#默认情况下，取回repo_name仓库内所有有更新(commit)的分支
+$git fetch <repo_name>
+#可以指定更新某一仓库的某一分支
+$git fetch <repo_name> <repo_branch_name>
+#指定更新某一仓库的某一分支并保存到本地分支local_branch_name(不存在则自动创建，存在则使用fast_forward合并)中
+$git fetch <repo_name> <repo_branch_name>:<local_branch_name>
+#fetch拉取后会更新FETCH_HEAD，指向目前版本库取下来分支的最新版本
+$git log FETCH_HEAD
+#在取回远程分支的更新以后，可以这样：
+#在 repo_name/branch_name (远程分支拉取到本地后的分支名，用git branch -r能查看)的基础上建立一个新分支 new_branch，
+$git checkout -b <new_branch> <repo_name/branch_name>
+#在当前分支合并拉取的远程分支
+$git merge <repo_name/branch_name>
+#或者：
+$git rebase <repo_name/branch_name>
+
+#git pull:首先，基于本地的FETCH_HEAD记录，比对本地的FETCH_HEAD记录与远程仓库的版本号
+#然后git fetch获得当前指向的远程分支的后续版本的数据
+#然后再利用git merge将其与本地的当前分支合并
+#完整点的格式(相似于fetch，因为pull就是先fetch再merge)
+$git pull <repo_name> <repo_branch_name>:<local_branch_name>
+#如果是与当前分支合并，那么就不需要指定local_branch_name
+$git pull <repo_name> <repo_branch_name>
+#上述命令相当于
+$git fetch <repo_name> <repo_branch_name>
+$git merge <repo_branch_name>
+#如果当前分支与远程分支有tracking，有跟踪，就不需要指定repo_branch_name
+$git pull <repo_name>
+#如果当前分支只有唯一track的远程分支，那么就不需要指定远程仓库repo_name
+$git pull
+#手动建立追踪关系可以用上面的git branch
+$git branch --set-upstream <local_branch_name> <repo_name/repo_branch_name>
+#默认使用的合并方式是fast_forward，如果要使用rebase模式，可以用--rebase
+$git pull --rebase
+#当远程仓库删除某一分支时，本地执行pull默认不会删除对应的本地分支，加-p可以删除
+$git pull -p
+#相当于
+$git fetch --prune <repo_name>
+$git fetch -p <repo_name>
+
+#git push:将本地的更新推送到远程分支
+$git push <repo_name> <local_branch_name>:<repo_branch_name>
+#<source>:<destination>
+#pull:  <repo>:<local>
+#push:  <local>:<repo>
+#如果省略远程分支名，则会推送到与本地分支名有追踪关系的远程分支上
+#如果不存在这样的远程分支，则会新建！
+$git push <repo_name> <local_branch_name>
+#如果省略本地分支名，则会删除指定的远程分支，相当于推送一个空的分支到远程分支上
+$git push <repo_name> :<repo_branch_name>
+#相当于
+$git push <repo_name> --delete <repo_branch_name>
+#如果当前分支与远程分支有追踪关系，可以省略本地分支名和远程分支名
+$git push <repo_name>
+#如果当前分支只有一个追踪的远程分支，则可以省略远程仓库名
+$git push
+#如果当前分支与多个仓库的分支有追踪关系，则可以用-u指定默认的远程仓库
+$git push -u <repo_name> <local_branch_name>
+#上述命令执行推送本地local_branch_name到repo_name对应的追踪分支，并且设定默认的远程仓库是repo_name
+#不带任何参数的git push默认使用simple模式，则只推送当前分支到对应的远程分支
+#设定成matching模式可以使git push推送时推送所有有对应远程分支的本地分支
+$git config --global push.default <matching|simple>
+#不管是否有对应的远程分支，本地分支都推送到远程repo
+$git push --all <repo_name>
+#如果远程仓库比本地仓库版本新，推送时会报错，需要pull后合并，合并解决冲突后再推送到远程仓库，可以使用--force，能使本地版本覆盖较新的远程版本
+$git push --force <repo_branch_name>
+#git push 不会推送tag标签，可以用--tags
+$git push --tags <repo_name>
+
+#关于rebase(变基):
+#参考链接:http://gitbook.liuhui998.com/4_2.html
+#场景：基于某个远程分支，本地进行了一些commit，另一方对这个远程分支进行了一些commit，导致本地分支与远程分支出现了分叉
+#如果这时push本地分支，则会出现冲突，一般需要pull下来处理冲突conflict再add->commit->push
+#这时使用rebase不使用pull修改合并，可以在需要push的当前分支：
+$git rebase <branch_name>
+#这里branch_name用远程分支的名字
+#rebase会把当前分支里的每个commit都取消掉，然后再保存成补丁patch，再把当前分支更新到指定的branch_name上，最后再把补丁patch应用到当前分支
+#rebase抛弃旧的更新commit，指向新创建的commit，在应用补丁的过程中，可能会出现冲突conflict
+#出现冲突时，解决冲突，然后git add将修改的内容添加到stage中，接着：
+$git rebase --continue
+#这样就不需要使用git commit,上述命令执行完就会继续aplly patch，直到所有patch都打完
+#在任何时候，都可以使用下面的操作来终止rebase并使当前分支回到使用rebase前的状态
+$git rebase --abort
+
+#标签tag
+#标签和branch分支很像，都是指向一个commit-id，只是分支可以移动，标签无法移动
+#标签就是版本库的一个快照
+#创建标签，默认标签是打在当前分支的最新commit上的
+$git tag <tagname>
+#查看所有标签，标签按照名称列出，而不是创建时间顺序
+$git tag
+#给指定的commit-id打标签
+$git tag <tagname> <commit_id>
+#查看标签的详细信息
+$git show <tagname>
+#上述命令相当于git show <tagname对应的commit-id>
+#标签也可以携带说明信息
+$git tag -a <tagname> -m "tag info" <commit_id>
+#删除本地标签
+$git tag -d <tagname>
+#推送某一标签到远程仓库
+$git push <repo_name> <tagname>
+#推送所有未推送到远程的标签
+$git push <repo_name> --tags
+#删除远程标签，先删除本地标签，在用push删除远程标签，类似于push删除远程分支
+$git tag -d <tagname>]
+$git push <repo_name> :<refs/tags/<tagname>>
+
+#配置别名
+$git config [--global] alias.<othername> "想替代的命令"
+#用global则针对当前用户，设置放在用户主目录下的.gitconfig中
+#不用global则针对当前仓库，设置存放在仓库的配置文件里.git/.gitconfig
+#举例
+$git config --global alias.co "checkout"
+$git config --global alias.ci "commit"
+$git config --global alias.br "branch"
+$git config --global alias.st "status"
+$git config --global alias.lg "log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit"
+
